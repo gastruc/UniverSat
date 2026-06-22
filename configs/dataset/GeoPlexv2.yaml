@@ -1,0 +1,364 @@
+defaults:
+  - train_transform: GeoPlex
+  - test_transform: GeoPlex
+  - _self_
+
+name: GeoPlexv2
+global_batch_size: #optimise for UniverSat Tiny
+  tsaits: 16
+  pastishd: 1
+  flair: 4
+  planted: 64
+  s2naip: 2
+  hyperglobal: 4
+  earthview: 1
+shapes: # in 10 meters
+  tsaits: 6
+  pastishd: 128
+  flair: 10.24
+  planted: 12
+  s2naip: 64
+  hyperglobal: 192
+  earthview: 6.4
+num_patches: # in (10 meters)²
+  tsaits: 36
+  pastishd: 16384
+  flair: 104.8576
+  planted: 144
+  s2naip: 4096
+  hyperglobal: 36864
+  earthview: 40.97 #should be 40.96 but using 40.97 to fix rounding errors
+
+iter: 1000 #${eval:'5000 // (${trainer.devices} * ${trainer.trainer.num_nodes})'}
+iter_val: 100 #${eval:'1000 // (${trainer.devices} * ${trainer.trainer.num_nodes})'}
+
+train_dataset:
+  _partial_: true
+  _target_: data.MultiDataset.MultiDataset
+  scales: ${dataset.scales}
+  datasets:
+    pastishd:
+      _target_: data.Pastis.PASTIS
+      path: ${paths.data_dir}/PASTIS-R/
+      modalities: ${modalities_dict.pastishd}
+      transform: ${dataset.train_transform}
+      reference_date: "2018-01-01"
+      folds: [1, 2, 3]
+      nb_split: 1
+      classif: ${dataset.pastishd.classif}
+      norm_path: ${paths.data_dir}/PASTIS-R/
+      split: train
+      temporal_dropout: ${dataset.pastishd.temporal_dropout}
+    tsaits:
+      _target_: data.TreeSAT.TreeSAT
+      path: ${paths.data_dir}/TreeSat/
+      split: train
+      transform: ${dataset.train_transform}
+      classes: ${dataset.tsaits.classes}
+      mono_strict: False
+      norm_path: ${paths.data_dir}/TreeSat/
+      modalities: ${modalities_dict.tsaits}
+    flair:
+      _target_: data.FLAIR.FLAIR
+      path: ${paths.data_dir}/FLAIR-INC/
+      split: train
+      transform: ${dataset.train_transform}
+      num_classes: ${dataset.flair.num_classes}
+      modalities: ${modalities_dict.flair}
+      norm_path: ${paths.data_dir}/FLAIR-INC/
+    planted:
+      _target_: data.Planted.Planted
+      path: ${paths.data_dir}/Planted/
+      split: train
+      transform: ${dataset.train_transform}
+      classes: ${dataset.planted.classes}
+      modalities: ${modalities_dict.planted}
+      norm_path: ${paths.data_dir}/Planted/
+      density_sampling: False
+    s2naip:
+      _target_: data.S2Naip.S2NAIP
+      path: ${paths.data_dir}/S2NAIP-urban/
+      split: train
+      transform: ${dataset.train_transform}
+      modalities: ${modalities_dict.s2naip}
+      norm_path: ${paths.data_dir}/S2NAIP-urban/
+    hyperglobal:
+      _target_: data.HyperGlobal.HyperionDataset
+      path: ${paths.data_dir}/HyperGlobal2/
+      transform: ${dataset.train_transform}
+      norm_path: ${paths.data_dir}/HyperGlobal2/
+    earthview:
+      _target_: data.EarthView.EarthView
+      path: ${paths.data_dir}/EarthView/
+      subset: neon
+      modalities: ${modalities_dict.earthview}
+      # transform: ${dataset.train_transform}
+      norm_path: ${paths.data_dir}/EarthView/
+      split: train
+
+val_dataset:
+  _partial_: true
+  _target_: data.MultiDataset.MultiDataset
+  scales: ${dataset.scales}
+  datasets:
+    pastishd:
+      _target_: data.Pastis.PASTIS
+      path: ${paths.data_dir}/PASTIS-R/
+      modalities: ${modalities_dict.pastishd}
+      transform: ${dataset.train_transform}
+      reference_date: "2018-01-01"
+      folds: [4]
+      nb_split: 1
+      classif: ${dataset.pastishd.classif}
+      norm_path: ${paths.data_dir}/PASTIS-R/
+      split: val
+      temporal_dropout: ${dataset.pastishd.temporal_dropout}
+
+test_dataset:
+  _partial_: true
+  _target_: data.MultiDataset.MultiDataset
+  scales: ${dataset.scales}
+  datasets:
+    pastishd:
+      _target_: data.Pastis.PASTIS
+      path: ${paths.data_dir}/PASTIS-R/
+      modalities: ${modalities_dict.pastishd}
+      transform: ${dataset.train_transform}
+      reference_date: "2018-01-01"
+      folds: [5]
+      nb_split: 1
+      classif: ${dataset.pastishd.classif}
+      norm_path: ${paths.data_dir}/PASTIS-R/
+      split: test
+    tsaits:
+      _target_: data.TreeSAT.TreeSAT
+      path: ${paths.data_dir}/TreeSat/
+      split: test
+      transform: ${dataset.test_transform}
+      classes: ${dataset.tsaits.classes}
+      mono_strict: False
+      norm_path: ${paths.data_dir}/TreeSat/
+      modalities: ${modalities_dict.tsaits}
+    flair:
+      _target_: data.FLAIR.FLAIR
+      path: ${paths.data_dir}/FLAIR-INC/
+      split: test
+      transform: ${dataset.test_transform}
+      num_classes: ${dataset.flair.num_classes}
+      modalities: ${modalities_dict.flair}
+      norm_path: ${paths.data_dir}/FLAIR-INC/
+    planted:
+      _target_: data.Planted.Planted
+      path: ${paths.data_dir}/Planted/
+      split: test
+      transform: ${dataset.test_transform}
+      classes: ${dataset.planted.classes}
+      modalities: ${modalities_dict.planted}
+      norm_path: ${paths.data_dir}/Planted/
+    s2naip:
+      _target_: data.S2Naip.S2NAIP
+      path: ${paths.data_dir}/S2NAIP-urban/
+      split: test
+      transform: ${dataset.test_transform}
+      modalities: ${modalities_dict.s2naip}
+      norm_path: ${paths.data_dir}/S2NAIP-urban/
+    hyperglobal:
+      _target_: data.HyperGlobal.HyperionDataset
+      path: ${paths.data_dir}/HyperGlobal2/
+      transform: ${dataset.train_transform}
+      norm_path: ${paths.data_dir}/HyperGlobal2/
+    earthview:
+      _target_: data.EarthView.EarthView
+      path: ${paths.data_dir}/EarthView/
+      subset: neon
+      modalities: ${modalities_dict.earthview}
+      # transform: ${dataset.train_transform}
+      norm_path: ${paths.data_dir}/EarthView/
+      split: test
+
+weights_datasets:
+  flair:
+    weight: 2
+    start_epoch: 0  # epoch to start sampling from this dataset
+    end_epoch: 0    # epoch where the full weight is reached (linear increase)
+  pastishd:
+    weight: 2
+    start_epoch: 0
+    end_epoch: 0
+  s2naip:
+    weight: 4
+    start_epoch: 0
+    end_epoch: 0
+  planted:
+    weight: 1
+    start_epoch: 0
+    end_epoch: 0
+  tsaits:
+    weight: 1
+    start_epoch: 0
+    end_epoch: 0
+  hyperglobal:
+    weight: 2
+    start_epoch: 0
+    end_epoch: 0
+  earthview:
+    weight: 4
+    start_epoch: 0
+    end_epoch: 0
+
+scales:
+  flair:
+    input_scales:
+      - 1.28
+      - 2.56
+    input_curiculum:
+      start_epoch: 20
+      end_epoch: 30
+    latent_scales:
+      - input
+    output_scales:
+      - 0.64
+      - 1.28
+  pastishd:
+    input_scales:
+      - 4
+      - 8
+      - 16
+    input_curiculum:
+      start_epoch: 20
+      end_epoch: 30
+    latent_scales:
+      - input
+    output_scales:
+      - 2
+      - 4
+  s2naip:
+    input_scales:
+      - 16
+      - 4
+      - 8
+    input_curiculum:
+      start_epoch: 20
+      end_epoch: 30
+    latent_scales:
+      - input
+    output_scales:
+      - 2
+      - 4
+  tsaits:
+    input_scales:
+      - 2
+      - 1
+    input_curiculum:
+      start_epoch: 20
+      end_epoch: 30
+    latent_scales:
+      - input
+    output_scales:
+      - 1
+  planted:
+    input_scales:
+      - 3
+    latent_scales:
+      - input
+    output_scales:
+      - 3
+  hyperglobal:
+    input_scales:
+      - 12  #4x4 patch
+      - 6   #2x2 patch
+    input_curiculum:
+      start_epoch: 20
+      end_epoch: 30
+    latent_scales:
+      - input
+    output_scales:
+      - 6
+      - 3
+  earthview:
+    input_scales:
+      - 0.8
+      - 1.6
+    input_curiculum:
+      start_epoch: 20
+      end_epoch: 30
+    latent_scales:
+      - input
+    output_scales:
+      - 0.4
+      - 0.8
+
+planted:
+  classes: ["Elaeis guineensis",
+        "Pinus taeda",
+        "Pinus rigida",
+        "Pinus koraiensis",
+        "Pinus densiflora",
+        "Abies sachalinensis",
+        "Pinus elliottii",
+        "Shorea robusta",
+        "Castanea crenata",
+        "Pseudotsuga menziesii",
+        "Eucalyptus globulus",
+        "Pinus radiata",
+        "Robinia pseudoacacia",
+        "Pinus thunbergii",
+        "Pinus echinata",
+        "Thea sinensis",
+        "Betula pendula",
+        "Hevea brasiliensis",
+        "Picea glehnii",
+        "Quercus acutissima",
+        "Eucalyptus nitens",
+        "Cocos nucifera",
+        "Anacardium occidentale",
+        "Zelkova serrata",
+        "Acer pictum",
+        "Prunus serrulata",
+        "Prunus dulcis",
+        "Picea jezoensis",
+        "Quercus variabilis",
+        "Fraxinus rhynchophylla",
+        "Ginkgo biloba",
+        "Pasania edulis",
+        "Dendropanax morbiferus",
+        "Machilus thunbergii",
+        "Cryptomeria japonica",
+        "Acacia melanoxylon",
+        "Malus pumila",
+        "Picea mariana",
+        "Cornus controversa",
+        "Theobroma cacao",
+        ]
+
+flair:
+  num_classes: 13
+  classif: False
+
+s2naip:
+  iter: ${eval:'${dataset.s2naip.true_len} // (${dataset.s2naip.reduce_factor} * ${dataset.global_batch_size.s2naip} * ${trainer.devices})'}
+  iter_val: ${eval:'${dataset.s2naip.true_len_val} // (${dataset.s2naip.reduce_factor} * ${dataset.global_batch_size.s2naip} * ${trainer.devices})'}
+  true_len: 359046
+  true_len_val: 82140
+  reduce_factor: 10
+
+pastishd:
+  classif: False
+  temporal_dropout: 30
+
+tsaits:
+  classes: ["Abies",
+            "Acer",
+            "Alnus",
+            "Betula",
+            "Cleared",
+            "Fagus",
+            "Fraxinus",
+            "Larix",
+            "Picea",
+            "Pinus",
+            "Populus",
+            "Prunus",
+            "Pseudotsuga",
+            "Quercus",
+            "Tilia"]

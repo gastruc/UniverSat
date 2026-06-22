@@ -1,0 +1,54 @@
+# @package _global_
+
+defaults:
+  - _self_
+  - dataset: GeoBench.yaml
+  - paths: default.yaml
+
+
+datamodule:
+  _target_: data.datamodule.DataModule
+  train_dataset: ${dataset.train_dataset}
+  val_dataset: ${dataset.val_dataset}
+  test_dataset: ${dataset.test_dataset}
+  global_batch_size: ${dataset.global_batch_size}
+  num_workers: 8
+  num_nodes: 1
+  num_devices: 1
+
+tags: ["eval"]
+device: "cuda" # "cuda" or "cpu"
+output_dir: "LP_eval"
+hf_repo_id: "g-astruc/UniverSat"
+ckpt_path: ""
+max_epochs: 100
+offline: True
+experiment_name: ${dataset.name}_${model.name}
+
+param:
+  seed_list: [32]
+  standardization: null
+  standardize_chunk_size: 1000000
+  norm_path_list:
+    - ${dataset.norm_path}
+    # - ${paths.data_dir}/unified_norm/
+  scale_list:
+    - ${dataset.scale_base}
+    # - ${dataset.scale_base} * 2
+  classification:
+    solver: adamw
+    sgd_momentum: 0.9
+    lr_list: [1e-4, 2e-4, 5e-4, 1e-3, 2e-3, 5e-3, 1e-2, 2e-2, 5e-2, 1e-1]
+    weight_decay_list: [0, 1e-4, 1e-3, 1e-2, 1e-1]
+    batch_size: 8
+    max_epochs: 150
+    pooling_list: ["mean","max"]
+  segmentation:
+    solver: adamw
+    sgd_momentum: 0.9
+    lr_list: [1e-4, 2e-4, 5e-4, 1e-3, 2e-3, 5e-3, 1e-2, 2e-2, 5e-2, 1e-1]
+    weight_decay_list: [0, 1e-2, 1e-1]
+    batch_size: 1024
+    max_epochs: 50
+    out_patch_size_list:
+      - ${dataset.out_patch_size}

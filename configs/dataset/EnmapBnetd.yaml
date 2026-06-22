@@ -1,0 +1,60 @@
+defaults:
+  - train_transform: Identity
+  - test_transform: Identity
+  - _self_
+
+name: EnmapBnetd
+global_batch_size: 1
+num_classes: 10
+height: 128
+width: 128
+num_patches: 16384
+norm_path: ${paths.data_dir}/SpectralEarthEval/enmap_bnetd/
+task : segmentation # "classification" or "segmentation"
+is_multilabel : false # only for classification
+res: 30
+scale_base: 6
+out_patch_size: 1
+
+raw_mask: false
+split_root: ${paths.data_dir}/SpectralEarthEval/splits/enmap_bnetd/
+classes: [0, 1, 2, 3, 6, 9, 10, 13, 15, 16, 21]
+
+train_dataset:
+  _partial_: true
+  _target_: data.EnmapDataset.EnMAPDataset
+  path: ${paths.data_dir}/SpectralEarthEval/enmap_bnetd/
+  product: enmap_bnetd
+  mask_root: bnetd
+  split: train
+  transform: ${dataset.train_transform}
+  classes: ${dataset.classes}
+  raw_mask: ${dataset.raw_mask}
+  split_root: ${dataset.split_root}
+  norm_path: ${dataset.norm_path}
+
+val_dataset:
+  _partial_: true
+  _target_: data.EnmapDataset.EnMAPDataset
+  path: ${paths.data_dir}/SpectralEarthEval/enmap_bnetd/
+  product: enmap_bnetd
+  mask_root: bnetd
+  split: val
+  transform: ${dataset.test_transform}
+  classes: ${dataset.classes}
+  raw_mask: ${dataset.raw_mask}
+  split_root: ${dataset.split_root}
+  norm_path: ${dataset.norm_path}
+
+test_dataset:
+  _partial_: true
+  _target_: data.EnmapDataset.EnMAPDataset
+  path: ${paths.data_dir}/SpectralEarthEval/enmap_bnetd/
+  product: enmap_bnetd
+  mask_root: bnetd
+  split: test
+  transform: ${dataset.test_transform}
+  classes: ${dataset.classes}
+  raw_mask: ${dataset.raw_mask}
+  split_root: ${dataset.split_root}
+  norm_path: ${dataset.norm_path}

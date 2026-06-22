@@ -1,0 +1,56 @@
+defaults:
+  - train_transform: Identity
+  - test_transform: Identity
+  - geobench_dataset: m-pv4ger
+  - _self_
+
+name: ${dataset.geobench_dataset.name}
+global_batch_size: 4
+num_classes: ${dataset.geobench_dataset.num_classes}
+height: ${dataset.geobench_dataset.height}
+width: ${dataset.geobench_dataset.height}
+num_patches: ${dataset.geobench_dataset.num_patches}
+out_patch_size: ${dataset.geobench_dataset.out_patch_size}
+norm_path: ${dataset.geobench_dataset.data_dir}
+res: ${dataset.geobench_dataset.res}
+scale_base: ${dataset.geobench_dataset.scale_base}
+task : ${dataset.geobench_dataset.type} # "classification" or "segmentation"
+is_multilabel : ${dataset.geobench_dataset.is_multilabel} # only for classification
+fraction: ${oc.select:dataset.geobench_dataset.fraction,1.0} # fraction of the dataset to use for training, validation and testing (for debugging purposes)
+use_memmap: ${oc.select:dataset.geobench_dataset.use_memmap,false}
+memmap_dir: /lustre/fsn1/projects/rech/msf/uih12tb/tmp
+probe_memmap_chunk_size: 1000000
+
+
+train_dataset:
+  _partial_: true
+  _target_: data.GeoBench.GeoBench
+  path: ${dataset.geobench_dataset.data_dir}
+  split: train
+  transform: ${dataset.train_transform}
+  modalities: ${dataset.geobench_dataset.modalities}
+  normalize: True
+  norm_path: ${dataset.norm_path}
+
+val_dataset:
+  _partial_: true
+  _target_: data.GeoBench.GeoBench
+  path: ${dataset.geobench_dataset.data_dir}
+  split: val
+  transform: ${dataset.train_transform}
+  modalities: ${dataset.geobench_dataset.modalities}
+  normalize: True
+  norm_path: ${dataset.norm_path}
+
+test_dataset:
+  _partial_: true
+  _target_: data.GeoBench.GeoBench
+  path: ${dataset.geobench_dataset.data_dir}
+  split: test
+  transform: ${dataset.train_transform}
+  modalities: ${dataset.geobench_dataset.modalities}
+  normalize: True
+  norm_path: ${dataset.norm_path}
+
+
+param: ${oc.select:dataset.geobench_dataset.param,{}}

@@ -1,0 +1,6 @@
+defaults:
+  - default.yaml
+
+trainer:
+  accelerator: cpu
+  devices: 1

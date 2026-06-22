@@ -1,0 +1,5 @@
+defaults:
+  - default.yaml
+trainer:
+  accelerator: mps
+  devices: 1

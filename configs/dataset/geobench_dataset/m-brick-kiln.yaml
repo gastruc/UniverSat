@@ -1,0 +1,13 @@
+name: m-brick-kiln
+num_classes: 2
+height: 64
+width: 64
+res: 10
+scale_base: 1
+out_patch_size: 1 #unused for classification but kept for consistency
+num_patches: ${eval:'${dataset.geobench_dataset.height}*${dataset.geobench_dataset.height}'}
+data_dir: ${paths.data_dir}/GeoBench/classification_v1.0/m-brick-kiln
+type : classification
+is_multilabel: False
+modalities:
+  s2: ['02 - Blue', '03 - Green', '04 - Red', '05 - Vegetation Red Edge', '06 - Vegetation Red Edge', '07 - Vegetation Red Edge', '08 - NIR', '08A - Vegetation Red Edge', '11 - SWIR', '12 - SWIR']

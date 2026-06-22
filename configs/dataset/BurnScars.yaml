@@ -1,0 +1,49 @@
+defaults:
+  - train_transform: Identity
+  - test_transform: Identity
+  - _self_
+
+name: burnscars
+global_batch_size: 4
+num_classes: 2
+height: 512
+width: 512
+num_patches: 262144
+norm_path: ${paths.data_dir}/PangeaBench/BurnScars/
+task : segmentation # "classification" or "segmentation"
+is_multilabel : false # only for classification
+res: 30
+scale_base: 12
+out_patch_size: 1
+use_memmap: True
+memmap_dir: ${paths.data_dir}
+
+modalities:
+  - "hls"
+
+train_dataset:
+  _partial_: true
+  _target_: data.BurnScar.BurnScar
+  path: ${paths.data_dir}/PangeaBench/BurnScars/
+  split: train
+  transform: ${dataset.train_transform}
+  modalities: ${dataset.modalities}
+  norm_path: ${dataset.norm_path}
+
+val_dataset:
+  _partial_: true
+  _target_: data.BurnScar.BurnScar
+  path: ${paths.data_dir}/PangeaBench/BurnScars/
+  split: val
+  transform: ${dataset.test_transform}
+  modalities: ${dataset.modalities}
+  norm_path: ${dataset.norm_path}
+
+test_dataset:
+  _partial_: true
+  _target_: data.BurnScar.BurnScar
+  path: ${paths.data_dir}/PangeaBench/BurnScars/
+  split: test
+  transform: ${dataset.test_transform}
+  modalities: ${dataset.modalities}
+  norm_path: ${dataset.norm_path}

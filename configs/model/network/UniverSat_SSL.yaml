@@ -1,0 +1,33 @@
+defaults:
+  - encoder: UniverSat_Tiny
+  - sensor: default
+
+instance:
+  _target_: models.networks.SSLUniverSat.SSLUniverSat
+  encoder: ${model.network.encoder}
+  predictor:
+    _target_: models.networks.encoder.Predictor.Predictor
+    num_patches: ${dataset.num_patches}
+    embed_dim: ${model.network.encoder.embed_dim}
+    predictor_embed_dim: ${model.network.encoder.embed_dim}
+    out_dim: ${model.network.encoder.embed_dim}
+    depth: 8
+    num_heads: ${model.network.encoder.num_heads}
+    mlp_ratio: 4.0
+    attn_drop_rate: 0.0
+    drop_path_rate: 0.0
+    qkv_bias: ${model.network.encoder.qkv_bias}
+    scales: ${dataset.scales}
+    n_registers: ${model.network.encoder.n_registers}
+    modality_wise: True
+    modalities_list: ${model.network.sensor.wavelengths} #automatically extract keys from wavelengths dict
+    time_wise: True
+    dates_to_select: 4
+    gating: ${model.network.encoder.gating}
+  n_registers: ${model.network.encoder.n_registers}
+  output_grid: ${dataset.num_patches}
+  keep_subpatch: False
+  input_res: ${model.network.sensor.input_res}
+  wavelengths: ${model.network.sensor.wavelengths}
+  subpatches: ${model.network.sensor.subpatches}
+  num_patches: ${dataset.num_patches}

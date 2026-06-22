@@ -1,0 +1,4 @@
+fixnan:
+  _target_: utils.fixnan.FixNANinGrad
+  monitor: [train/loss, val/loss]
+  

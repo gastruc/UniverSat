@@ -1,0 +1,43 @@
+defaults:
+  - train_transform: Identity
+  - test_transform: Identity
+  - _self_
+
+name: MADOS
+global_batch_size: 1
+num_classes: 15
+height: 240
+width: 240
+num_patches: 57600
+norm_path: ${paths.data_dir}/PangeaBench/Mados/pastisnorm
+task : segmentation # "classification" or "segmentation"
+is_multilabel : false # only for classification
+res: 10
+scale_base: 4
+out_patch_size: 1
+use_memmap: True
+memmap_dir: ${paths.data_dir}
+
+train_dataset:
+  _partial_: true
+  _target_: data.Mados.MADOS
+  path: ${paths.data_dir}/PangeaBench/Mados/
+  split: train
+  transform: ${dataset.train_transform}
+  norm_path: ${dataset.norm_path}
+
+val_dataset:
+  _partial_: true
+  _target_: data.Mados.MADOS
+  path: ${paths.data_dir}/PangeaBench/Mados/
+  split: test
+  transform: ${dataset.test_transform}
+  norm_path: ${dataset.norm_path}
+
+test_dataset:
+  _partial_: true
+  _target_: data.Mados.MADOS
+  path: ${paths.data_dir}/PangeaBench/Mados/
+  split: test
+  transform: ${dataset.test_transform}
+  norm_path: ${dataset.norm_path}

@@ -1,0 +1,60 @@
+defaults:
+  - train_transform: Identity
+  - test_transform: Identity
+  - _self_
+
+name: EnmapEurocrops
+global_batch_size: 1
+num_classes: 15
+height: 128
+width: 128
+num_patches: 16384
+norm_path: ${paths.data_dir}/SpectralEarthEval/enmap_eurocrops/
+task : segmentation # "classification" or "segmentation"
+is_multilabel : false # only for classification
+res: 30
+scale_base: 6
+out_patch_size: 1
+
+raw_mask: false
+split_root: ${paths.data_dir}/SpectralEarthEval/splits/enmap_eurocrops/
+classes: [0, 3301090205, 3301010600, 3301090303, 3301010800, 3301090301, 3303060000, 3303030600, 3303050000, 3303030100, 3301060500, 3301060300, 3303010000, 3301020000, 3301160000, 3301029900]
+
+train_dataset:
+  _partial_: true
+  _target_: data.EnmapDataset.EnMAPDataset
+  path: ${paths.data_dir}/SpectralEarthEval/enmap_eurocrops/
+  product: enmap_eurocrops
+  mask_root: eurocrops
+  split: train
+  transform: ${dataset.train_transform}
+  classes: ${dataset.classes}
+  raw_mask: ${dataset.raw_mask}
+  split_root: ${dataset.split_root}
+  norm_path: ${dataset.norm_path}
+
+val_dataset:
+  _partial_: true
+  _target_: data.EnmapDataset.EnMAPDataset
+  path: ${paths.data_dir}/SpectralEarthEval/enmap_eurocrops/
+  product: enmap_eurocrops
+  mask_root: eurocrops
+  split: val
+  transform: ${dataset.test_transform}
+  classes: ${dataset.classes}
+  raw_mask: ${dataset.raw_mask}
+  split_root: ${dataset.split_root}
+  norm_path: ${dataset.norm_path}
+
+test_dataset:
+  _partial_: true
+  _target_: data.EnmapDataset.EnMAPDataset
+  path: ${paths.data_dir}/SpectralEarthEval/enmap_eurocrops/
+  product: enmap_eurocrops
+  mask_root: eurocrops
+  split: test
+  transform: ${dataset.test_transform}
+  classes: ${dataset.classes}
+  raw_mask: ${dataset.raw_mask}
+  split_root: ${dataset.split_root}
+  norm_path: ${dataset.norm_path}

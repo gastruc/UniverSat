@@ -1,0 +1,49 @@
+defaults:
+  - train_transform: Identity
+  - test_transform: Identity
+  - _self_
+
+name: sen1floods11
+global_batch_size: 1
+num_classes: 2
+height: 512
+width: 512
+num_patches: 262144
+norm_path: ${paths.data_dir}/PangeaBench/Sen1Floods11/
+task : segmentation # "classification" or "segmentation"
+is_multilabel : false # only for classification
+res: 10
+scale_base: 8
+out_patch_size: 1
+use_memmap: True
+memmap_dir: ${paths.data_dir}
+
+modalities:
+  - "s1"
+
+train_dataset:
+  _partial_: true
+  _target_: data.Sen1floods11.Sen1Floods11
+  path: ${paths.data_dir}/PangeaBench/Sen1Floods11/
+  split: train
+  transform: ${dataset.train_transform}
+  modalities: ${dataset.modalities}
+  norm_path: ${dataset.norm_path}
+
+val_dataset:
+  _partial_: true
+  _target_: data.Sen1floods11.Sen1Floods11
+  path: ${paths.data_dir}/PangeaBench/Sen1Floods11/
+  split: val
+  transform: ${dataset.test_transform}
+  modalities: ${dataset.modalities}
+  norm_path: ${dataset.norm_path}
+
+test_dataset:
+  _partial_: true
+  _target_: data.Sen1floods11.Sen1Floods11
+  path: ${paths.data_dir}/PangeaBench/Sen1Floods11/
+  split: test
+  transform: ${dataset.test_transform}
+  modalities: ${dataset.modalities}
+  norm_path: ${dataset.norm_path}

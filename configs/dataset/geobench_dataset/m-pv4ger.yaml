@@ -1,0 +1,13 @@
+name: m-pv4ger
+num_classes: 2
+height: 320
+width: 320
+res: 0.1
+scale_base: 0.4
+out_patch_size: 40
+num_patches: ${eval:'${dataset.geobench_dataset.height}*${dataset.geobench_dataset.height}'}
+data_dir: ${paths.data_dir}/GeoBench/classification_v1.0/m-pv4ger
+type : classification
+is_multilabel: False
+modalities:
+  rgbneon: ['Blue', 'Green', 'Red']

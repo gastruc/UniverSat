@@ -1,0 +1,14 @@
+name: m-NeonTree
+num_classes: 2
+height: 400
+width: 400
+res: 0.1 # 10 cm
+scale_base: 0.4 # 4m
+out_patch_size: 4
+num_patches: ${eval:'${dataset.geobench_dataset.height}*${dataset.geobench_dataset.height}'}
+data_dir: ${paths.data_dir}/GeoBench/segmentation_v1.0/m-NeonTree
+type : segmentation
+is_multilabel: False
+modalities:
+  rgbneon: ['Red', 'Green', 'Blue']
+  label: ['label']

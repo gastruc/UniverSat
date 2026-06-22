@@ -1,0 +1,62 @@
+# @package _global_
+
+defaults:
+  - override /dataset: GeoPlexv2
+  - override /model: UniverSat
+  - override /model/network: UniverSat_SSL
+  - override /model/network/encoder: UniverSat_Tiny
+  - override /model/loss: MAEMLP-Contra
+  - override /model/masker: random
+
+model:
+  name: "UniverSat_MAE"
+  optimizer:
+    lr: 1e-3
+callbacks:
+  early_stopping:
+    monitor: "train/loss"
+    patience: 200
+
+datamodule:
+  _target_: data.datamodule.DataModuleMulti
+  stop_iteration_train: ${dataset.iter}
+  stop_iteration_val: ${dataset.iter_val}
+  weights_datasets: ${dataset.weights_datasets}
+  persistent_workers: True
+  prefetch_factor: 4
+
+modalities_dict:
+  flair:
+    - "spotRGBN"
+    - "aerialflair"
+    - "s2flair"
+    - "s1flair"
+    - "dem"
+  pastishd:
+    - "spot"
+    - "s2"
+    - "s1"
+  planted:
+    - "s2"
+    - "s1"
+    - "l7"
+    - "alos"
+    - "modis"
+  tsaits:
+    - "aerial"
+    - "s2"
+    - "s1"
+  s2naip:
+    - "naip"
+    - "l8"
+    - "s2"
+    - "s1"
+  hyperglobal:
+    - "EO1"
+  earthview:
+    - "rgbneon"
+    - "ndemneon"
+    - "neon"
+  spectralearth:
+    - "enmap"
+

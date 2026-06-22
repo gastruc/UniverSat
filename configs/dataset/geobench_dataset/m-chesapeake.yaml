@@ -1,0 +1,14 @@
+name: m-chesapeake
+num_classes: 7
+height: 256
+width: 256
+res: 1
+scale_base: 0.8
+out_patch_size: 8
+num_patches: ${eval:'${dataset.geobench_dataset.height}*${dataset.geobench_dataset.height}'}
+data_dir: ${paths.data_dir}/GeoBench/segmentation_v1.0/m-chesapeake
+type : segmentation
+is_multilabel: False
+modalities:
+  rgbn: ['Red', 'Green', 'Blue', 'NearInfrared']
+  label: ['label']

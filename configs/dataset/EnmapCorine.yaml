@@ -1,0 +1,103 @@
+efaults:
+  - train_transform: Identity
+  - test_transform: Identity
+  - _self_
+
+name: EnmapCorine
+global_batch_size: 1
+num_classes: 19
+height: 128
+width: 128
+num_patches: 16384
+norm_path: ${paths.data_dir}/SpectralEarthEval/enmap_corine/
+task : classification # "classification" or "segmentation"
+is_multilabel : True # only for classification
+res: 30
+scale_base: 6
+out_patch_size: 1
+
+raw_mask: false
+split_root: ${paths.data_dir}/SpectralEarthEval/splits/enmap_corine/
+classes: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]
+background_class: null
+class_mapping:
+  111: 0
+  112: 0
+  121: 1
+  211: 2
+  212: 2
+  213: 2
+  221: 3
+  222: 3
+  223: 3
+  231: 4
+  241: 3
+  242: 5
+  243: 6
+  244: 7
+  311: 8
+  312: 9
+  313: 10
+  321: 11
+  322: 12
+  323: 12
+  324: 13
+  331: 14
+  333: 11
+  411: 15
+  412: 15
+  421: 16
+  422: 16
+  511: 17
+  512: 17
+  521: 18
+  522: 18
+  523: 18
+
+train_dataset:
+  _partial_: true
+  _target_: data.EnmapDataset.EnMAPDataset
+  path: ${paths.data_dir}/SpectralEarthEval/enmap_corine/
+  product: enmap_corine
+  mask_root: corine
+  split: train
+  transform: ${dataset.train_transform}
+  classes: ${dataset.classes}
+  class_mapping: ${dataset.class_mapping}
+  background_class: ${dataset.background_class}
+  raw_mask: ${dataset.raw_mask}
+  split_root: ${dataset.split_root}
+  norm_path: ${dataset.norm_path}
+  classif: True
+
+val_dataset:
+  _partial_: true
+  _target_: data.EnmapDataset.EnMAPDataset
+  path: ${paths.data_dir}/SpectralEarthEval/enmap_corine/
+  product: enmap_corine
+  mask_root: corine
+  split: val
+  transform: ${dataset.test_transform}
+  classes: ${dataset.classes}
+  class_mapping: ${dataset.class_mapping}
+  background_class: ${dataset.background_class}
+  raw_mask: ${dataset.raw_mask}
+  split_root: ${dataset.split_root}
+  norm_path: ${dataset.norm_path}
+  classif: True
+
+test_dataset:
+  _partial_: true
+  _target_: data.EnmapDataset.EnMAPDataset
+  path: ${paths.data_dir}/SpectralEarthEval/enmap_corine/
+  product: enmap_corine
+  mask_root: corine
+  split: test
+  transform: ${dataset.test_transform}
+  classes: ${dataset.classes}
+  class_mapping: ${dataset.class_mapping}
+  background_class: ${dataset.background_class}
+  raw_mask: ${dataset.raw_mask}
+  split_root: ${dataset.split_root}
+  norm_path: ${dataset.norm_path}
+  classif: True

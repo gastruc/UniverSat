@@ -1,0 +1,17 @@
+# @package _global_
+
+defaults:
+  - UniverSat_Pastis_FT
+
+dataset:
+  classif: False
+  global_batch_size: 1
+
+model:
+  name: "UniverSat_Pastis_LP"
+  optimizer:
+    lr: 2e-3 #5e-5 # 2e-4
+  network:
+    instance:
+      load_path: logs/GeoPlexv2_UniverSat/checkpoints/last.ckpt         #for fine-tuning
+      freeze_backbone: True  #for linear probing

@@ -1,0 +1,18 @@
+defaults:
+  - encoder: UniverSat_Tiny
+  - mlp: mlpSemSeg
+  - sensor: default
+
+instance:
+  _target_: models.networks.MonoModal.MonoModalUniv2
+  encoder: ${model.network.encoder}
+  mlp: ${model.network.mlp}
+  classif: False
+  scale: 1
+  n_registers: ${model.network.encoder.n_registers}
+  latent_grid: ${eval:'${dataset.num_patches} // (${model.network.instance.scale} ** 2)'}
+  output_grid: ${dataset.num_patches}
+  keep_subpatch: False
+  input_res: ${model.network.sensor.input_res}
+  wavelengths: ${model.network.sensor.wavelengths}
+  subpatches: ${model.network.sensor.subpatches}

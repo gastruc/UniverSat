@@ -1,0 +1,58 @@
+# UniverSat — conda environment.
+#
+# The torch.hub release path only needs `torch` (and numpy). Everything else
+# here is for the training / evaluation pipeline.
+
+name: universat
+
+channels:
+  - pytorch
+  - conda-forge
+
+dependencies:
+  # --- core ML stack ---
+  - python=3.10
+  - pytorch=2.*
+  - torchvision=0.*
+  - lightning=2.*
+  - torchmetrics
+  - einops
+
+  # --- numerical / scientific ---
+  - numpy
+  - scipy
+  - pandas
+  - matplotlib
+  - scikit-learn=1.*
+
+  # --- EO data I/O ---
+  - rasterio=1.*
+  - tifffile
+  - opencv
+  - h5py=3.*
+  - pyarrow
+  - geopandas
+  - pillow
+
+  # --- config / hydra ---
+  - hydra-core=1.*
+  - pyyaml
+  - rich
+
+  # --- logging ---
+  - wandb
+  - tqdm
+
+  # --- tests ---
+  - pytest
+
+  # --- pip-only deps ---
+  - pip>=23
+  - pip:
+      - hydra-colorlog
+      - pyrootutils
+      - lightning-bolts        # pl_bolts.optimizers.LinearWarmupCosineAnnealingLR (configs/model/SemSeg.yaml)
+      - tfrecord[torch]        # Planted dataset
+      - datasets               # HuggingFace datasets — EarthView (NEON) loader
+      - stopit                 # timeout decorator for LP eval
+      - timm

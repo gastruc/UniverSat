@@ -1,0 +1,41 @@
+# @package _global_
+
+defaults:
+  - override /dataset: Pastis
+  - override /model/network/encoder: UniverSat_Tiny
+  - override /model: SemSeg
+  - override /model/network: UniverSat_SemSeg
+  - override /model/network/mlp: mlpSemSeg
+
+dataset:
+  classif: False
+
+model:
+  name: "UniverSat_Pastis_FT"
+  train_metrics:
+    ignore_column: -1
+  val_metrics:
+    ignore_column: -1
+  test_metrics:
+    ignore_column: -1
+  optimizer:
+    lr: 2e-4 #5e-5 # 2e-4
+  network:
+    instance:
+      scale: 4
+      keep_subpatch: False
+    mlp:
+      instance:
+        patch_size: 1
+        initial_dim: ${model.network.encoder.embed_dim}
+
+callbacks:
+  early_stopping:
+    monitor: "val/mIoU"
+    mode: "max"
+    patience: 25
+
+modalities:
+  # - "spot"
+  - "s2"
+  - "s1"

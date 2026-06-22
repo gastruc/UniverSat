@@ -1,0 +1,37 @@
+defaults:
+  - network: UniverSat_SemSeg
+  - loss: CrossEntropyWeighted
+  - train_metrics: metrics_semseg
+  - val_metrics: metrics_semseg
+  - test_metrics: metrics_semseg
+  - _self_
+
+name: SemSeg
+
+optimizer:
+  _target_: torch.optim.AdamW
+  _partial_: true
+  lr: 0.001
+  weight_decay: 0.005
+
+scheduler:
+  # _target_: torch.optim.lr_scheduler.ReduceLROnPlateau
+  # _partial_: true
+  # mode: min
+  # factor: 0.1
+  # patience: 200
+
+  _target_: pl_bolts.optimizers.lr_scheduler.LinearWarmupCosineAnnealingLR
+  _partial_: true
+  warmup_epochs: 5
+  max_epochs: ${max_epochs}
+
+instance:
+  _target_: src.models.module.Module
+  optimizer: ${model.optimizer}
+  scheduler: ${model.scheduler}
+  network: ${model.network}
+  loss: ${model.loss}
+  train_metrics: ${model.train_metrics}
+  val_metrics: ${model.val_metrics}
+  test_metrics: ${model.test_metrics}

@@ -1,0 +1,75 @@
+defaults:
+  - train_transform: Identity
+  - test_transform: Identity
+  - _self_
+
+name: AI4Farms
+global_batch_size: 4
+num_classes: 2
+height: 496
+width: 496
+ignore_index: -1
+num_patches: 246016
+norm_path: ${paths.data_dir}/PangeaBench/AI4Farms/
+task: segmentation
+is_multilabel: false
+res: 10
+scale_base: 4
+out_patch_size: 1
+region: sentinel-2-asia
+subdir: ""
+
+modalities:
+  - "s2_4band"
+
+bands:
+  optical:
+    - B2
+    - B3
+    - B4
+    - B8
+
+train_dataset:
+  _partial_: true
+  _target_: data.Ai4Farms.Ai4Farms
+  path: ${paths.data_dir}/PangeaBench/AI4Farms/
+  split: train
+  transform: ${dataset.train_transform}
+  modalities: ${dataset.modalities}
+  norm_path: ${dataset.norm_path}
+  region: ${dataset.region}
+  subdir: ${dataset.subdir}
+  height: ${dataset.height}
+  width: ${dataset.width}
+  num_patches: ${dataset.num_patches}
+  ignore_index: ${dataset.ignore_index}
+
+val_dataset:
+  _partial_: true
+  _target_: data.Ai4Farms.Ai4Farms
+  path: ${paths.data_dir}/PangeaBench/AI4Farms/
+  split: val
+  transform: ${dataset.test_transform}
+  modalities: ${dataset.modalities}
+  norm_path: ${dataset.norm_path}
+  region: ${dataset.region}
+  subdir: ${dataset.subdir}
+  height: ${dataset.height}
+  width: ${dataset.width}
+  num_patches: ${dataset.num_patches}
+  ignore_index: ${dataset.ignore_index}
+
+test_dataset:
+  _partial_: true
+  _target_: data.Ai4Farms.Ai4Farms
+  path: ${paths.data_dir}/PangeaBench/AI4Farms/
+  split: test
+  transform: ${dataset.test_transform}
+  modalities: ${dataset.modalities}
+  norm_path: ${dataset.norm_path}
+  region: ${dataset.region}
+  subdir: ${dataset.subdir}
+  height: ${dataset.height}
+  width: ${dataset.width}
+  num_patches: ${dataset.num_patches}
+  ignore_index: ${dataset.ignore_index}

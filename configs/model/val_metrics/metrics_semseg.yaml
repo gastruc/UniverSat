@@ -1,0 +1,3 @@
+_target_: src.models.metrics.metrics.MetricsSeg
+num_classes: ${dataset.num_classes}
+ignore_value: -1

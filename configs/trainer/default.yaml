@@ -1,0 +1,31 @@
+# @package _global_
+trainer:
+  trainer:
+    _target_: lightning.pytorch.trainer.Trainer
+    default_root_dir: ${paths.output_dir}
+    min_epochs: 50 # prevents early stopping
+    max_epochs: ${max_epochs}
+    accelerator: cpu
+    devices: ${trainer.devices}
+    sync_batchnorm: False
+    #gradient_clip_val: 0.2
+    precision: bf16
+    strategy:
+      _target_: lightning.pytorch.strategies.DDPStrategy
+      find_unused_parameters: true
+      # 2h timeout so the per-dataset barrier during LP eval does not trip when
+      # a rank is evaluating a long dataset (e.g. Pastis with all modalities).
+      timeout:
+        _target_: datetime.timedelta
+        seconds: 7200
+    num_nodes: ${trainer.num_nodes}
+    accumulate_grad_batches: 1
+    check_val_every_n_epoch: 1
+    deterministic: False # set True to to ensure deterministic results, makes training slower but gives more reproducibility than just setting seeds
+    reload_dataloaders_every_n_epochs: 1
+    enable_progress_bar: True
+
+  num_nodes: 1
+  devices: 1
+  num_workers: ${num_workers}
+num_workers: 8

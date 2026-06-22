@@ -1,0 +1,9 @@
+_target_: models.losses.Losses
+
+weight:
+  cross_entropy_ignore: 1.0
+
+losses:
+  cross_entropy_ignore:
+    _target_: models.losses.CrossEntropyIgnore
+    num_classes: ${dataset.num_classes}

@@ -1,0 +1,13 @@
+name: m-forestnet
+num_classes: 43
+height: 332
+width: 332
+res: 15
+scale_base: 3
+out_patch_size: 2
+num_patches: ${eval:'${dataset.geobench_dataset.height}*${dataset.geobench_dataset.height}'}
+data_dir: ${paths.data_dir}/GeoBench/classification_v1.0/m-forestnet
+type : classification
+is_multilabel: False
+modalities:
+  l8forestnet: ['02 - Blue', '03 - Green', '04 - Red', '05 - NIR', '06 - SWIR1', '07 - SWIR2']

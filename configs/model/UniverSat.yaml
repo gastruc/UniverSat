@@ -1,0 +1,36 @@
+defaults:
+  - network: UniverSat_SSL
+  - val_metrics: SSLmetrics
+  - test_metrics:  SSLmetrics
+  - masker: random
+  - _self_
+  - loss: MAEMLP-Contra
+
+name: UniverSat
+
+optimizer:
+  _target_: torch.optim.AdamW
+  _partial_: true
+  lr: 0.001
+  weight_decay: 0.001
+  eps: 1e-5 #1e-15
+
+scheduler:
+  _target_: torch.optim.lr_scheduler.ReduceLROnPlateau
+  _partial_: true
+  mode: min
+  factor: 0.1
+  patience: 10
+
+instance:
+  _target_: src.models.module_SSL.ModuleMultiMAE
+  optimizer: ${model.optimizer}
+  scheduler: ${model.scheduler}
+  network: ${model.network}
+  target_head_lr: ${model.optimizer.lr}
+  loss: ${model.loss}
+  val_metrics: ${model.val_metrics}
+  test_metrics: ${model.test_metrics}
+  masker: ${model.masker}
+  scales: ${dataset.scales}
+  shapes: ${dataset.shapes}

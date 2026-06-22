@@ -1,0 +1,24 @@
+_target_: models.losses.Losses
+
+weight:
+  maemlp: 1.0
+  contrastive: 1.0
+
+losses:
+  maemlp:
+    _target_: models.losses.MAEMLPLoss
+    dim: ${model.network.encoder.embed_dim}
+    wavelength: ${model.network.sensor.wavelengths}
+    resolution: ${model.network.sensor.input_res}
+    scales: ${dataset.scales}
+    modalities_dict:  ${modalities_dict}
+    space: "randomlinear" # pixel or randomlinear
+    use_contrastif: True
+    share_mlp: False
+    depth: 1
+    flexiVit: 32 # False or maximum size of kernel
+    flexiVit_timestep: 0 # if x>0 using temporal kernel with x anchors. Need flexiVit
+    tau: 0.1
+  contrastive:
+    _target_: models.losses.MILNCE
+    tau: 0.2

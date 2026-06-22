@@ -1,0 +1,45 @@
+_target_: models.networks.encoder.UniverSat.UniverSat
+
+spatial_encoder:
+  _target_: models.networks.encoder.UniversalPatchEncoder.UniversalPatchEncoder
+  _partial_: true  # finished by UniverSat, which injects its norm_layer
+  embed_dim: ${eval:'${model.network.encoder.embed_dim} // 4'}
+  final_dim: ${model.network.encoder.embed_dim}
+  n_queries:
+    - 1
+    - 1
+    - 1
+    - 1
+  expand_dim:
+    - 1
+    - 2
+    - 2
+    - 2
+  order:
+    - S1
+    - C
+    - T
+    - S
+  num_heads: ${model.network.encoder.num_heads}
+  mlp_ratio: 4.0
+  attn_drop_rate: 0.0
+  gating: ${model.network.encoder.gating}
+
+embed_dim: 192
+block_type:
+  - Bi_ACA_in
+  - SAx6
+  - Bilinear_out
+  - CA_Sub
+
+num_heads: 8
+mlp_ratio: 4.
+n_registers: 4
+pre_norm: False
+drop_rate: 0.0
+drop_path_rate: 0.0
+attn_drop_rate: 0.0
+qkv_bias: False
+gating: True
+proba_drop_modalities: 0.3
+modalities_dict: ${modalities_dict}

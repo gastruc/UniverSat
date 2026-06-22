@@ -1,0 +1,13 @@
+lp_eval:
+  _target_: src.callbacks.lp_eval_callback.LinearProbeEvalCallback
+  enabled: True
+  eval_every: 3
+  submit_on_cluster: True
+  wandb_group: ${logger.wandb.group}
+  slurm_account: uhn
+  slurm_gpu: a100
+  slurm_qos: t3
+  slurm_nodes: 1
+  slurm_num_gpus: 2
+  slurm_walltime: "1:00:00"
+  slurm_env_path: ${oc.env:VENV,null}

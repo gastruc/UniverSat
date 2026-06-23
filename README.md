@@ -2,7 +2,7 @@
 
 ### Resolution- and Modality-Agnostic Transformers for Earth Observation
 
-[![arXiv preprint](https://img.shields.io/badge/arXiv-preprint-b31b1b.svg)](#citation)
+[![arXiv preprint](https://img.shields.io/badge/arXiv-2606.23503-b31b1b.svg)](https://arxiv.org/abs/2606.23503)
 [![project page](https://img.shields.io/badge/project-page-5a4fff.svg)](https://gastruc.github.io/universat)
 [![python](https://img.shields.io/badge/-Python_3.10+-blue?logo=python&logoColor=white)](https://www.python.org/)
 [![pytorch](https://img.shields.io/badge/PyTorch_2.2+-ee4c2c?logo=pytorch&logoColor=white)](https://pytorch.org/get-started/locally/)
@@ -16,7 +16,7 @@
 
 <p align="center">
   <a href="https://gastruc.github.io/universat"><b>🌐 Project page</b></a> &nbsp;·&nbsp;
-  <a href="#citation"><b>📄 Paper</b></a> &nbsp;·&nbsp;
+  <a href="https://arxiv.org/abs/2606.23503"><b>📄 Paper</b></a> &nbsp;·&nbsp;
   <a href="#quick-start"><b>⚡ Quick Start</b></a> &nbsp;·&nbsp;
   <a href="demo.ipynb"><b>📓 Demo</b></a>
 </p>
@@ -342,7 +342,7 @@ UniverSat trades specialisation for generality. In homogeneous settings (e.g. VH
   title   = {UniverSat: Resolution- and Modality-Agnostic Transformers for Earth Observation},
   author  = {Perron, Yohann and Astruc, Guillaume and Gonthier, Nicolas
              and Mallet, Clement and Landrieu, Loic},
-  journal = {arXiv preprint},
+  journal = {arXiv preprint arXiv:2606.23503},
   year    = {2026}
 }
 ```

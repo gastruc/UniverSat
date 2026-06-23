@@ -16,11 +16,10 @@ optimizer:
   eps: 1e-5 #1e-15
 
 scheduler:
-  _target_: torch.optim.lr_scheduler.ReduceLROnPlateau
+  _target_: torch.optim.lr_scheduler.CosineAnnealingLR
   _partial_: true
-  mode: min
-  factor: 0.1
-  patience: 10
+  T_max: ${max_epochs}
+  eta_min: 1e-6
 
 instance:
   _target_: src.models.module_SSL.ModuleMultiMAE
@@ -34,3 +33,4 @@ instance:
   masker: ${model.masker}
   scales: ${dataset.scales}
   shapes: ${dataset.shapes}
+  warmup_epochs: 10

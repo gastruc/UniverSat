@@ -45,6 +45,7 @@ class ModuleMultiMAE(LightningModule):
                  masker:Masker,
                  scales,
                  shapes,
+                 warmup_epochs=0,
                  ):
         super().__init__()
         self.model = network.instance
@@ -54,6 +55,7 @@ class ModuleMultiMAE(LightningModule):
         self.optimizer = optimizer
         self.target_head_lr = target_head_lr
         self.scheduler = scheduler
+        self.warmup_epochs = warmup_epochs
 
         self.mask_collator = {}
         for dataset in scales.keys():
@@ -226,7 +228,22 @@ class ModuleMultiMAE(LightningModule):
             import functools
             scheduler_cls = self.scheduler.func if isinstance(self.scheduler, functools.partial) else self.scheduler
             if scheduler_cls.__name__ == "CosineAnnealingLR":
-                scheduler = self.scheduler(optimizer=optimizer)
+                warmup_epochs = int(self.warmup_epochs or 0)
+                if warmup_epochs > 0:
+                    num_epochs = int(self.scheduler.keywords.get("T_max", warmup_epochs + 1)) \
+                        if isinstance(self.scheduler, functools.partial) else warmup_epochs + 1
+                    scheduler = torch.optim.lr_scheduler.SequentialLR(
+                        optimizer,
+                        schedulers=[
+                            torch.optim.lr_scheduler.LinearLR(
+                                optimizer, start_factor=0.01, end_factor=1.0, total_iters=warmup_epochs,
+                            ),
+                            self.scheduler(optimizer=optimizer, T_max=max(num_epochs - warmup_epochs, 1)),
+                        ],
+                        milestones=[warmup_epochs],
+                    )
+                else:
+                    scheduler = self.scheduler(optimizer=optimizer)
                 return {
                     "optimizer": optimizer,
                     "lr_scheduler": {

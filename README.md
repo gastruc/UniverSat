@@ -71,6 +71,31 @@ model = torch.hub.load("gastruc/UniverSat", "from_pretrained").eval()
 
 Loading the weights requires `huggingface_hub` (and `safetensors`). The released checkpoint is a **Base** UniverSat (~201 M params).
 
+#### Choose a compilation policy
+
+Both Hugging Face and Torch Hub loaders accept the same `compile=` option:
+
+| Value | Behaviour |
+|---|---|
+| `"max"` | **Default and recommended for inference.** Compile both hot-path regions and max-autotune the UPE for the highest inference throughput. Training and masked calls still use max-autotune but emit a warning. |
+| `True` or `"fast"` | Compile both regions with PyTorch's default mode for a shorter first-use warm-up and training or masked workloads. |
+| `False` | Run eagerly with no `torch.compile` wrappers. Useful for short jobs, debugging, unsupported backends, or applying your own compilation policy. |
+
+```python
+# Hugging Face loading without compilation
+model = UniverSat.from_pretrained(
+    "g-astruc/UniverSat",
+    compile=False,
+).eval()
+
+# Torch Hub with the shorter default-compilation warm-up
+model = torch.hub.load(
+    "gastruc/UniverSat",
+    "from_pretrained",
+    compile="fast",
+).eval()
+```
+
 ### 2. Encode any sensor combination
 
 ```python

@@ -1,3 +1,4 @@
+import warnings
 from functools import partial
 from typing import Dict, List
 
@@ -265,28 +266,26 @@ class UniverSat(nn.Module):
             modalities = [m for m in modalities if m != "modis"]
             modalities.insert(0, "modis")
 
-        if mask_in is not None:
+        non_modis_indices = [
+            i for i, modality in enumerate(modalities) if modality != "modis"
+        ]
+        drop_modalities = mask_in is not None and len(non_modis_indices) > 1
+        if drop_modalities:
             proba_drop = torch.rand(len(modalities))
             # Force at least one non-modis modality to not be dropped
             # so that `spatial` is never empty
-            non_modis_indices = [i for i, m in enumerate(modalities) if m != "modis"]
-            if non_modis_indices:
-                non_modis_indices_tensor = torch.tensor(
-                    non_modis_indices, device=proba_drop.device
+            non_modis_indices_tensor = torch.tensor(
+                non_modis_indices, device=proba_drop.device
+            )
+            forced_idx = non_modis_indices_tensor[
+                torch.randint(
+                    0,
+                    non_modis_indices_tensor.numel(),
+                    (1,),
+                    device=proba_drop.device,
                 )
-                forced_idx = non_modis_indices_tensor[
-                    torch.randint(
-                        0,
-                        non_modis_indices_tensor.numel(),
-                        (1,),
-                        device=proba_drop.device,
-                    )
-                ]
-                proba_drop[forced_idx] = 1.0
-            else:
-                proba_drop[torch.randint(0, len(modalities), (1,))] = 1.0
-        else:
-            proba_drop = torch.ones(len(modalities))
+            ]
+            proba_drop[forced_idx] = 1.0
 
         for count, modality in enumerate(modalities):
             if mask_in is not None and modality != "modis":
@@ -334,7 +333,10 @@ class UniverSat(nn.Module):
                 else:
                     intermediate_tokens[f"tokens_{modality}"] = token
 
-                if proba_drop[count] < self.proba_drop_modalities:
+                if (
+                    drop_modalities
+                    and proba_drop[count] < self.proba_drop_modalities
+                ):
                     continue
 
                 tokens.append(token)
@@ -708,6 +710,16 @@ class UniverSat(nn.Module):
         """
         modalities = list(wavelengths.keys())
         modalities = [modality for modality in modalities if modality in x.keys()]
+        if getattr(self, "compile_mode", None) == "max" and (
+            self.training or mask_in is not None
+        ):
+            warnings.warn(
+                "compile='max' uses max-autotune for every UPE call and is "
+                "recommended for unmasked inference. Use compile=True or "
+                "compile='fast' for training or masked workloads.",
+                RuntimeWarning,
+                stacklevel=2,
+            )
 
         (
             tokens,

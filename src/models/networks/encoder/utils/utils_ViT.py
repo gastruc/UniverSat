@@ -3,6 +3,7 @@ from itertools import repeat
 from typing import Optional, Union
 
 import torch
+import torch._dynamo
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.jit import Final
@@ -17,7 +18,6 @@ from models.networks.encoder.utils.utils import DropPath, matching_grids
 _SDPA_MAX_BATCH = 2**15
 
 
-@torch.compiler.disable
 def fused_sdpa(q, k, v, attn_mask=None):
     """Fastest available PyTorch attention.
 
@@ -230,7 +230,6 @@ class ACAttention(nn.Module):
         nn.init.kaiming_normal_(self.wk.weight, nonlinearity='relu')
         nn.init.kaiming_normal_(self.wv.weight, nonlinearity='relu')
 
-    @torch.compiler.disable
     def get_qkv(self, x):
         B, N, C = x.shape
         C = C * self.expand_dim
@@ -283,7 +282,25 @@ class ACAttention(nn.Module):
 
         q,k = self.apply_rope(q, k, coords)
 
-        if not return_attn:
+        use_single_query_reduction = (
+            q.shape[-2] == 1
+            and not return_attn
+            and (
+                torch._dynamo.is_compiling()
+                or not self.training
+            )
+        )
+        if use_single_query_reduction:
+            # UPE creates very large batches of independent, single-query
+            # attentions. Reductions let Inductor avoid millions of tiny
+            # batched GEMMs and are also faster than SDPA in eager inference.
+            attn = (q * k).sum(dim=-1).unsqueeze(-2) * self.scale
+            attn = attn.softmax(dim=-1)
+            attn = self.attn_drop(attn)
+            x = (
+                attn.transpose(-2, -1) * v
+            ).sum(dim=-2, keepdim=True)
+        elif not return_attn:
             x = fused_sdpa(q, k, v)
         else:
             attn = (q @ k.transpose(-2, -1)) * self.scale

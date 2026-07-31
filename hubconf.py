@@ -35,20 +35,16 @@ Forward signature (inference mode, ``mask_in=mask_out=None``)::
 
 import os
 import sys
+from types import MethodType
+from typing import Union
 
+import torch
 from torch import nn
 
-# UniverSat's encoder wraps two hot paths in ``@torch.compile`` to speed up
-# large-scale training (see ``src/models/networks/encoder/UniverSat.py``). On the
-# hub / inference path the one-off compile cost never amortises over a handful of
-# forward passes, and varying input shapes can trip dynamo's recompile limit — so
-# importing this entrypoint turns compilation into a no-op. This is a global,
-# process-wide switch and is more robust than ``TORCH_COMPILE_DISABLE=1`` (which
-# torch only reads at import). The training stack under ``src/`` never imports this
-# module, so it keeps its ``torch.compile`` speedups.
-import torch._dynamo
-
-torch._dynamo.config.disable = True
+# Hub callers choose the compilation policy with ``compile=``. The default
+# ``"max"`` uses max-autotune for the UPE and is recommended for inference.
+# ``True`` is an alias for ``"fast"``, which uses default compilation, while
+# ``False`` leaves both regions eager.
 
 dependencies = ["torch"]
 _REPO_ROOT = os.path.dirname(os.path.abspath(__file__))
@@ -106,10 +102,58 @@ except ImportError:  # pragma: no cover - exercised only without huggingface_hub
 # ---------------------------------------------------------------------------
 
 
-def _build_model(size: str, modalities_dict, **overrides):
+def _normalize_compile_mode(compile_option: Union[bool, str]) -> str:
+    """Return the internal name for a public ``compile=`` option."""
+    if compile_option == "max":
+        return "max"
+    if compile_option is False:
+        return "eager"
+    if compile_option is True or compile_option == "fast":
+        return "fast"
+    raise ValueError(
+        "compile must be False, 'fast', 'max', or True; "
+        f"got {compile_option!r}."
+    )
+
+
+def _uncompiled_method(model, name):
+    """Bind the original implementation hidden by a ``torch.compile`` wrapper."""
+    method = getattr(type(model), name)
+    return MethodType(getattr(method, "__wrapped__", method), model)
+
+
+def _configure_compilation(model, compile_option):
+    """Install eager or compiled UPE/trunk callables on a Hub model instance."""
+    compile_mode = _normalize_compile_mode(compile_option)
+    upe = _uncompiled_method(model, "UPE_forward")
+    trunk = _uncompiled_method(model, "ViT_forward")
+
+    if compile_mode == "max":
+        upe = torch.compile(upe, mode="max-autotune")
+    elif compile_mode == "fast":
+        upe = torch.compile(upe)
+
+    if compile_mode != "eager":
+        # The training trunk is dynamic, but arbitrary Hub sensor geometries
+        # can overflow Inductor's symbolic indexing analysis (notably for VHR
+        # inputs). Concrete graphs remain compiled and are cached per shape.
+        trunk = torch.compile(trunk, dynamic=False)
+
+    object.__setattr__(model, "UPE_forward", upe)
+    object.__setattr__(model, "ViT_forward", trunk)
+    model.compile_mode = compile_mode
+
+
+def _build_model(
+    size: str,
+    modalities_dict,
+    compile: Union[bool, str] = "max",
+    **overrides,
+):
     """Instantiate ``UniverSat`` at the requested size."""
     if size not in MODEL_CONFIGS:
         raise ValueError(f"Unknown size {size!r}. Available: {sorted(MODEL_CONFIGS)}.")
+    _normalize_compile_mode(compile)
     cfg = {**MODEL_CONFIGS[size], **overrides}
 
     # Imports deferred so the module can be inspected without torch.
@@ -149,6 +193,7 @@ def _build_model(size: str, modalities_dict, **overrides):
         proba_drop_modalities=0.0,  # inference default
         modalities_dict=modalities_dict,
     )
+    _configure_compilation(model, compile)
     _attach_encode(model)
     return model
 
@@ -179,7 +224,6 @@ def _attach_encode(model):
     match a modality in the registry) is passed through unchanged — useful
     for time-series sensors that expect a ``<modality>_dates`` tensor.
     """
-    import torch
     from modality_registry import INPUT_RES, SUBPATCHES, WAVELENGTHS
 
     def encode(
@@ -325,13 +369,23 @@ def _strip_registers(result, n_registers):
 class _UniverSatHub(nn.Module):
     """Thin wrapper around the built ``UniverSat`` with a serialisable config."""
 
-    def __init__(self, size: str = "base", modalities_dict=None):
+    def __init__(
+        self,
+        size: str = "base",
+        modalities_dict=None,
+        compile: Union[bool, str] = "max",
+    ):
         super().__init__()
         self.size = size
         self.modalities_dict = modalities_dict or DEFAULT_MODALITIES_DICT
+        self.compile_mode = _normalize_compile_mode(compile)
         # The released encoder lives at ``.model`` (so its state_dict keys are
         # ``model.*`` — what push_to_hub serialises and from_pretrained reloads).
-        self.model = _build_model(size=size, modalities_dict=self.modalities_dict)
+        self.model = _build_model(
+            size=size,
+            modalities_dict=self.modalities_dict,
+            compile=compile,
+        )
 
     def forward(self, *args, **kwargs):
         return _strip_registers(self.model(*args, **kwargs), self.model.n_registers)
@@ -372,7 +426,13 @@ else:  # huggingface_hub not installed: building still works, loading does not.
 # ---------------------------------------------------------------------------
 
 
-def universat(pretrained: bool = False, size: str = "base", modalities_dict=None, **kwargs):
+def universat(
+    pretrained: bool = False,
+    size: str = "base",
+    modalities_dict=None,
+    compile: Union[bool, str] = "max",
+    **kwargs,
+):
     """UniverSat (AnySat v2) — multimodal, multi-resolution EO encoder.
 
     Args:
@@ -385,12 +445,25 @@ def universat(pretrained: bool = False, size: str = "base", modalities_dict=None
             pretraining recipe — change only if your checkpoint used a different
             set. Ignored when ``pretrained=True`` (the published ``config.json``
             decides).
+        compile: compilation policy. ``False`` runs eagerly, ``"fast"`` or
+            ``True`` uses default compilation at both internal boundaries, and
+            ``"max"`` max-autotunes the UPE. ``"max"`` is the default and is
+            recommended for unmasked inference.
         **kwargs: forwarded to :meth:`UniverSat.from_pretrained` when
             ``pretrained`` (e.g. ``revision=``, ``cache_dir=``).
     """
     if pretrained:
-        return from_pretrained(repo_id=_HF_REPO_ID, size=size, **kwargs)
-    return UniverSat(size=size, modalities_dict=modalities_dict)
+        return from_pretrained(
+            repo_id=_HF_REPO_ID,
+            size=size,
+            compile=compile,
+            **kwargs,
+        )
+    return UniverSat(
+        size=size,
+        modalities_dict=modalities_dict,
+        compile=compile,
+    )
 
 
 def from_pretrained(repo_id: str = _HF_REPO_ID, **kwargs):

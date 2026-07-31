@@ -1,6 +1,5 @@
 from typing import List
 
-import torch
 from torch import nn
 
 from models.networks.encoder.utils.pos_embed import get_coords
@@ -26,8 +25,8 @@ class SSLUniverSat(nn.Module):
         wavelengths: Mapping from modality name to channel wavelengths. Passed
             to the encoder to describe the spectral layout of each modality.
         input_res: Mapping from modality name to native input resolution. Values
-            are converted to tensors and passed to the encoder for scale-aware
-            positional/modality processing.
+            are stored as static Python floats and passed to the encoder for
+            scale-aware positional/modality processing.
         n_registers: Number of register tokens prepended by the encoder and
             preserved when computing predictor input/output coordinates.
         output_grid: Mapping from dataset name to the number of spatial tokens
@@ -55,7 +54,7 @@ class SSLUniverSat(nn.Module):
         ):
         super().__init__()
         self.wavelengths = wavelengths
-        self.input_res = {k: torch.tensor(v) for k, v in input_res.items()}
+        self.input_res = {k: float(v) for k, v in input_res.items()}
         self.n_registers = n_registers
         self.latent_grid =  output_grid
         self.output_grid = output_grid

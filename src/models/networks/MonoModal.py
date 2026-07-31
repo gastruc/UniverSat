@@ -54,7 +54,7 @@ class MonoModalUniv2(nn.Module):
         self.classif = classif
         self.mlp = mlp.instance
         self.wavelengths = wavelengths
-        self.input_res = {k: torch.tensor(v) for k, v in input_res.items()}
+        self.input_res = {k: float(v) for k, v in input_res.items()}
         self.scale = scale
         self.n_registers = n_registers
         self.latent_grid = latent_grid
@@ -77,7 +77,7 @@ class MonoModalUniv2(nn.Module):
                 for param in self.encoder.parameters():
                     param.requires_grad = False
         else:
-            assert self.freeze_backbone == False, "If you want to freeze the backbone, please provide a load_path"
+            assert not self.freeze_backbone, "If you want to freeze the backbone, please provide a load_path"
             self.apply(_init_weights)
 
     def forward(self, x):
@@ -92,4 +92,3 @@ class MonoModalUniv2(nn.Module):
             out = out[:, self.n_registers:]
         out = self.mlp(out)
         return out
-

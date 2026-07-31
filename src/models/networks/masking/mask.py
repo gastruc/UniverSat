@@ -2,6 +2,7 @@ import math
 from typing import List, Union
 
 import torch
+import torch._dynamo
 
 
 class Mask(object):
@@ -74,7 +75,7 @@ class Mask(object):
             if 'T' in current_shape and len(x.shape) == len(current_shape)-1:
                 # This particular modality doesn't have a T dimension
                 if ax == 'T':
-                    raise ValueError(f"Invalid axis T. The current data does not support a T dimension.")
+                    raise ValueError("Invalid axis T. The current data does not support a T dimension.")
                 mask = self._unsqueeze_mask(mask, ax, current_shape.replace('T', ''))
             else:
                 # Unsqueeze the mask for other cases
@@ -135,7 +136,8 @@ class Mask(object):
 
         S_upsampled = base_index + row_offsets + col_offsets # B x S x factor x factor
         S_upsampled = S_upsampled.reshape(self.S.shape[0], -1)
-        if S_upsampled.numel() > 0:
+        # Break compiled graph
+        if not torch._dynamo.is_compiling() and S_upsampled.numel() > 0:
             mx = int(S_upsampled.max().item())
             if mx >= new_S_length:
                 raise RuntimeError(

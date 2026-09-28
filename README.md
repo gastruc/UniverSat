@@ -2,7 +2,8 @@
 
 ### Resolution- and Modality-Agnostic Transformers for Earth Observation
 
-[![arXiv preprint](https://img.shields.io/badge/arXiv-2606.23503-b31b1b.svg)](https://arxiv.org/abs/2606.23503)
+[![NeurIPS 2026](https://img.shields.io/badge/NeurIPS-2026-4b44ce.svg)](https://neurips.cc/Conferences/2026)
+[![arXiv](https://img.shields.io/badge/arXiv-2606.23503-b31b1b.svg)](https://arxiv.org/abs/2606.23503)
 [![project page](https://img.shields.io/badge/project-page-5a4fff.svg)](https://gastruc.github.io/universat)
 [![python](https://img.shields.io/badge/-Python_3.10+-blue?logo=python&logoColor=white)](https://www.python.org/)
 [![pytorch](https://img.shields.io/badge/PyTorch_2.2+-ee4c2c?logo=pytorch&logoColor=white)](https://pytorch.org/get-started/locally/)
@@ -13,6 +14,8 @@
 **[Yohann Perron](https://yohannperron.github.io/WebPage/)\*** · **[Guillaume Astruc](https://gastruc.github.io/)\*** · **[Nicolas Gonthier](https://ngonthier.github.io/)** · **[Clément Mallet](https://www.umr-lastig.fr/clement-mallet/)** · **[Loïc Landrieu](https://loiclandrieu.com/)**
 
 <sup>\*</sup>Equal contribution &nbsp;·&nbsp; LASTIG, Univ Gustave Eiffel &nbsp;·&nbsp; IGN &nbsp;·&nbsp; ENSG &nbsp;·&nbsp; CNES &nbsp;·&nbsp; LIGM, École des Ponts ParisTech &nbsp;·&nbsp; EFEO
+
+🎉 **Accepted at [NeurIPS 2026](https://neurips.cc/Conferences/2026)!**
 
 <p align="center">
   <a href="https://gastruc.github.io/universat"><b>🌐 Project page</b></a> &nbsp;·&nbsp;
@@ -363,12 +366,12 @@ UniverSat trades specialisation for generality. In homogeneous settings (e.g. VH
 ## Citation
 
 ```bibtex
-@article{perron2026universat,
-  title   = {UniverSat: Resolution- and Modality-Agnostic Transformers for Earth Observation},
-  author  = {Perron, Yohann and Astruc, Guillaume and Gonthier, Nicolas
-             and Mallet, Clement and Landrieu, Loic},
-  journal = {arXiv preprint arXiv:2606.23503},
-  year    = {2026}
+@inproceedings{perron2026universat,
+  title     = {UniverSat: Resolution- and Modality-Agnostic Transformers for Earth Observation},
+  author    = {Perron, Yohann and Astruc, Guillaume and Gonthier, Nicolas
+               and Mallet, Clement and Landrieu, Loic},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
+  year      = {2026}
 }
 ```
 
